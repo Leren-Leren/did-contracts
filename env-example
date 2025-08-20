@@ -1,0 +1,6 @@
+PRIVATE_KEY=your_private_key_here
+SKALE_RPC_URL=https://mainnet.skalenodes.com/v1/honorable-steel-rasalhague
+SKALE_CHAIN_ID=your_chain_id
+SKALE_TESTNET_RPC_URL=https://testnet.skalenodes.com/v1/giant-half-dual-testnet
+SKALE_TESTNET_CHAIN_ID=your_testnet_chain_id
+ETHERSCAN_API_KEY=your_etherscan_api_key
