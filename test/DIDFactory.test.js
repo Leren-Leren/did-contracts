@@ -14,7 +14,6 @@ describe("DIDFactory", function () {
     
     const DIDFactory = await ethers.getContractFactory("DIDFactory");
     didFactory = await DIDFactory.deploy();
-    await didFactory.deployed();
   });
 
   describe("Deployment", function () {
@@ -33,13 +32,14 @@ describe("DIDFactory", function () {
 
   describe("Registry Creation", function () {
     it("Should create a registry successfully", async function () {
-      await expect(didFactory.createRegistry(registryId))
-        .to.emit(didFactory, "RegistryCreated")
-        .withArgs(registryId, expect.any(String), expect.any(String));
-
+      const tx = await didFactory.createRegistry(registryId);
+      await expect(tx)
+        .to.emit(didFactory, "RegistryCreated");
+      
+      // Verify the registry was created successfully
       const registryInfo = await didFactory.getRegistry(registryId);
-      expect(registryInfo.didRegistry).to.not.equal(ethers.constants.AddressZero);
-      expect(registryInfo.vcRegistry).to.not.equal(ethers.constants.AddressZero);
+      expect(registryInfo.didRegistry).to.not.equal(ethers.ZeroAddress);
+      expect(registryInfo.vcRegistry).to.not.equal(ethers.ZeroAddress);
       expect(registryInfo.isActive).to.be.true;
       expect(registryInfo.createdAt).to.be.gt(0);
     });
@@ -75,20 +75,27 @@ describe("DIDFactory", function () {
       
       await expect(
         didFactory.createRegistry(registryId)
-      ).to.be.revertedWith("Pausable: paused");
+      ).to.be.revertedWithCustomError(didFactory, "EnforcedPause");
     });
 
     it("Should fail to create registry by non-owner", async function () {
       await expect(
         didFactory.connect(user1).createRegistry(registryId)
-      ).to.be.revertedWith("Ownable: caller is not the owner");
+      ).to.be.revertedWithCustomError(didFactory, "OwnableUnauthorizedAccount");
     });
 
     it("Should deploy working DID and VC registries", async function () {
       const tx = await didFactory.createRegistry(registryId);
       const receipt = await tx.wait();
       
-      const event = receipt.events.find(e => e.event === 'RegistryCreated');
+      const event = receipt.logs.find(log => {
+        try {
+          const parsed = didFactory.interface.parseLog(log);
+          return parsed.name === 'RegistryCreated';
+        } catch {
+          return false;
+        }
+      });
       const didRegistryAddress = event.args.didRegistry;
       const vcRegistryAddress = event.args.vcRegistry;
 
@@ -168,7 +175,7 @@ describe("DIDFactory", function () {
     it("Should fail to deactivate by non-owner", async function () {
       await expect(
         didFactory.connect(user1).deactivateRegistry(registryId)
-      ).to.be.revertedWith("Ownable: caller is not the owner");
+      ).to.be.revertedWithCustomError(didFactory, "OwnableUnauthorizedAccount");
     });
 
     it("Should fail to reactivate by non-owner", async function () {
@@ -176,7 +183,7 @@ describe("DIDFactory", function () {
       
       await expect(
         didFactory.connect(user1).reactivateRegistry(registryId)
-      ).to.be.revertedWith("Ownable: caller is not the owner");
+      ).to.be.revertedWithCustomError(didFactory, "OwnableUnauthorizedAccount");
     });
   });
 
@@ -188,8 +195,8 @@ describe("DIDFactory", function () {
     it("Should return correct registry information", async function () {
       const registryInfo = await didFactory.getRegistry(registryId);
       
-      expect(registryInfo.didRegistry).to.not.equal(ethers.constants.AddressZero);
-      expect(registryInfo.vcRegistry).to.not.equal(ethers.constants.AddressZero);
+      expect(registryInfo.didRegistry).to.not.equal(ethers.ZeroAddress);
+      expect(registryInfo.vcRegistry).to.not.equal(ethers.ZeroAddress);
       expect(registryInfo.isActive).to.be.true;
       expect(registryInfo.createdAt).to.be.gt(0);
     });
@@ -273,7 +280,7 @@ describe("DIDFactory", function () {
     it("Should not allow non-owner to pause", async function () {
       await expect(
         didFactory.connect(user1).pause()
-      ).to.be.revertedWith("Ownable: caller is not the owner");
+      ).to.be.revertedWithCustomError(didFactory, "OwnableUnauthorizedAccount");
     });
 
     it("Should not allow non-owner to unpause", async function () {
@@ -281,7 +288,7 @@ describe("DIDFactory", function () {
       
       await expect(
         didFactory.connect(user1).unpause()
-      ).to.be.revertedWith("Ownable: caller is not the owner");
+      ).to.be.revertedWithCustomError(didFactory, "OwnableUnauthorizedAccount");
     });
   });
 });

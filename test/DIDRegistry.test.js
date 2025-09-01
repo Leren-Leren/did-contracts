@@ -17,7 +17,6 @@ describe("DIDRegistry", function () {
     
     const DIDRegistry = await ethers.getContractFactory("DIDRegistry");
     didRegistry = await DIDRegistry.deploy();
-    await didRegistry.deployed();
   });
 
   describe("Deployment", function () {
@@ -67,7 +66,7 @@ describe("DIDRegistry", function () {
       
       await expect(
         didRegistry.connect(user1).createDID(sampleDID, sampleDocument)
-      ).to.be.revertedWith("Pausable: paused");
+      ).to.be.revertedWithCustomError(didRegistry, "EnforcedPause");
     });
   });
 
@@ -183,7 +182,7 @@ describe("DIDRegistry", function () {
 
     it("Should fail to transfer to zero address", async function () {
       await expect(
-        didRegistry.connect(user1).transferDIDOwnership(sampleDID, ethers.constants.AddressZero)
+        didRegistry.connect(user1).transferDIDOwnership(sampleDID, ethers.ZeroAddress)
       ).to.be.revertedWith("New owner cannot be zero address");
     });
 
@@ -256,7 +255,7 @@ describe("DIDRegistry", function () {
     it("Should not allow non-owner to pause", async function () {
       await expect(
         didRegistry.connect(user1).pause()
-      ).to.be.revertedWith("Ownable: caller is not the owner");
+      ).to.be.revertedWithCustomError(didRegistry, "OwnableUnauthorizedAccount");
     });
 
     it("Should not allow non-owner to unpause", async function () {
@@ -264,7 +263,7 @@ describe("DIDRegistry", function () {
       
       await expect(
         didRegistry.connect(user1).unpause()
-      ).to.be.revertedWith("Ownable: caller is not the owner");
+      ).to.be.revertedWithCustomError(didRegistry, "OwnableUnauthorizedAccount");
     });
   });
 });

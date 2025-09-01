@@ -29,11 +29,7 @@ contract DIDRegistry is IDIDRegistry, Ownable, Pausable, ReentrancyGuard {
     // Mapping to track if a DID exists
     mapping(string => bool) private _didExists;
 
-    // Events
-    // event DIDCreated(string indexed did, address indexed owner, string document);
-    // event DIDUpdated(string indexed did, address indexed owner, string document);
-    // event DIDDeactivated(string indexed did, address indexed owner);
-    // event DIDOwnershipTransferred(string indexed did, address indexed previousOwner, address indexed newOwner);
+    // Events are inherited from IDIDRegistry interface
 
     constructor() Ownable(msg.sender) {}
 

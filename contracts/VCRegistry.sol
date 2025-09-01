@@ -37,10 +37,7 @@ contract VCRegistry is IVCRegistry, Ownable, Pausable, ReentrancyGuard {
     // Mapping to track if a VC exists
     mapping(string => bool) private _vcExists;
 
-    // Events
-    // event VCIssued(string indexed vcId, address indexed issuer, string indexed holder, string credential);
-    // event VCRevoked(string indexed vcId, address indexed issuer);
-    // event VCUpdated(string indexed vcId, address indexed issuer, string credential);
+    // Events are inherited from IVCRegistry interface
 
     constructor(address _didRegistry) Ownable(msg.sender) {
         require(_didRegistry != address(0), "DID Registry address cannot be zero");
